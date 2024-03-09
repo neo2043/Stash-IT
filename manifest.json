@@ -1,0 +1,12 @@
+{
+    "manifest_version": 3,
+    "name": "Tabs & Bookmark Exporter",
+    "version": "1.0",
+    "icons": {
+        "16": "images/icon.png"
+    },
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "permissions": ["tabGroups","tabs","downloads","storage","bookmarks"]
+}

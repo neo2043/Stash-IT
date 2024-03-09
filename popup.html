@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./popup.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="op"></div>
+    <h1>Groups & Tabs Exporter</h1>
+    <div id="full_download_div">
+        <button id="download_1">Download Tabs, Groups and Bookmarks</button>
+        <button id="download_2">Copy Tabs, Groups and Bookmarks</button>
+    </div>
+    <hr>
+    <div id="specific_tab_bookmark_group_div">
+    </div>
+    <div id="specifics">
+        <button id="download_specific_tab_bookmark_group" style="width: 100%;">
+            Download Specific tab and bookmarks Group
+        </button>
+    </div>
+    <hr>
+    <button id="import">Import Json</button>
+    <div id="import_after">
+        <button id="upload">
+            <label for="fileInput">Upload Json File</label>
+            <input type="file" id="fileInput" class="hidden-input" >
+        </button>
+        <hr>
+        <textarea style="resize: none;" name="jsonData" id="jsonData" cols="32" rows="3"></textarea>
+        <button id="submitJson">Submit Json Data</button>
+    </div>
+    <script src="./popup.js" type="module"></script>
+</body>
+
+</html>

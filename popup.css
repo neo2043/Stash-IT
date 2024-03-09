@@ -1,0 +1,46 @@
+body{
+    width: 256px;
+}
+  
+.hidden-input {
+    display: none;
+}
+
+#specific_tab_bookmark_group_div > div{
+    display: block;
+}
+
+#full_download_div {
+    display: inline-flex;
+}
+
+#specifics{
+    display: inline-flex;
+    width: 100%;
+}
+
+#download_1{
+    width: 48%;
+    margin-right: 2%;
+}
+
+#download_2{
+    width: 50%;
+}
+
+#upload{
+    width: 100%;
+}
+
+#import_after{
+    display:none;
+}
+
+#import{
+    width: 100%;
+}
+
+#submitJson{
+    margin-top: 3px;
+    width: 100%;
+}
