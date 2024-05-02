@@ -1,7 +1,7 @@
 # browser_tab_bookmark_exporter
 
-this project helps you download all the open tabs in grouped format if there are any
-or even if they aren't in a json file
+this project helps you download all the open tabs and bookamrks in a json format. This application lets you 
+download the json file or you  can copy the data to clipboard
 
 ## installation
 
