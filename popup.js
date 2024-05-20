@@ -58,11 +58,14 @@ function all_data(){
 }
 
 document.querySelector("#download_1").addEventListener("click",async () => {
+    var jsonName = window.prompt("enter the name: ")
+    console.log(jsonName)
     var grouped_data =await all_data();
     var blob = new Blob([JSON.stringify(grouped_data)], { type: "application/json" });
     var url = URL.createObjectURL(blob);
     chrome.downloads.download({
-        url: url
+        url: url,
+        filename: jsonName
     });
 })
 
@@ -300,10 +303,12 @@ down_specific_tab_group_button.addEventListener("click", async () => {
     var grouped_data = await specifics();
     
     if (grouped_data.bookmarks.length!=0 || grouped_data.tabs.length!= 0) {
+        var jsonName = window.prompt("enter the name: ")
         var blob = new Blob([JSON.stringify(grouped_data)], { type: "application/json" });
         var url = URL.createObjectURL(blob);
         chrome.downloads.download({
-            url: url
+            url: url,
+            filename: jsonName
         });
     }
 });
