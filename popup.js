@@ -1,7 +1,6 @@
 const fileInput = document.getElementById('fileInput');
 const down_specific_tab_group_button = document.querySelector("#download_specific_tab_bookmark_group");
 const specific_tab_group_div = document.querySelector("#specific_tab_bookmark_group_div");
-const op = document.querySelector("#op");
 const importJson = document.querySelector("#import");
 const importJson_after = document.querySelector("#import_after");
 const submitJson = document.querySelector("#submitJson");
@@ -81,7 +80,13 @@ importJson.addEventListener("click",()=>{
 })
 
 submitJson.addEventListener("click",()=>{
-    tabs_bookmark_generator(JSON.parse(jsonData.value));
+    try {
+        tabs_bookmark_generator_json(JSON.parse(jsonData.value));
+    } catch (error) {
+        if(error instanceof(SyntaxError)){
+            tabs_generator_plain(jsonData.value)
+        }
+    }
 })
 
 fileInput.onchange = () => {
@@ -89,11 +94,36 @@ fileInput.onchange = () => {
     var reader = new FileReader();
     reader.readAsText(selectedFile);
     reader.onload = function (e) {
-        tabs_bookmark_generator(JSON.parse(e.target.result));
+        try {
+            tabs_bookmark_generator_json(JSON.parse(e.target.result));
+        } catch (error) {
+            if(error instanceof(SyntaxError)){
+                tabs_generator_plain(e.target.result)
+            }
+        }
     }
 }
 
-const tabs_bookmark_generator = (json) => {
+const tabs_generator_plain = (data) => {
+    plain_parse(data).forEach(async (clean_link) => {
+        await chrome.tabs.create({url:clean_link})
+    })
+}
+
+const plain_parse = (data) => {
+    const regexStr = "\\b((?:https?|ftp|file):"
+                                + "\\/\\/[a-zA-Z0-9+&@#\\/%?=~_|!:,.;]*"
+                                + "[a-zA-Z0-9+&@#\\/%=~_|])"
+    const regex = new RegExp(regexStr, 'gi')
+    let match
+    let urlList = [];
+    while ((match = regex.exec(data)) !== null){
+        urlList.push(match[0])
+    }
+    return urlList
+}
+
+const tabs_bookmark_generator_json = (json) => {
     if(json.tabs.length!=0){
         json.tabs.forEach((element) => {
             if (element.group_title || element.group_title == "") {
