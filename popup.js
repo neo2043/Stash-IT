@@ -10,6 +10,19 @@ const tabs = await chrome.tabs.query({});
 const groups = await chrome.tabGroups.query({});
 const bookmarks = await chrome.bookmarks.getTree();
 
+function bm_rec(bm){
+    if(bm.children){
+        return {
+            "group_title":bm.title,
+            "children":bm.children.map(bm_rec)
+        }
+    }
+    return {
+        "bookmark_title":bm.title,
+        "bookmark_url":bm.url
+    }
+}
+
 function all_data(){
     var grouped_data = {
         "tabs": groups.map((group) => {
@@ -37,18 +50,8 @@ function all_data(){
             })
     });
 
-    grouped_data.bookmarks = bookmarks[0].children[0].children.map((element) => {
-        if (element.children) {
-            return {
-                "group_title": element.title,
-                "bookmarks": element.children.map((element) => {
-                    return { "bookmark_title": element.title, "bookmark_url": element.url }
-                })
-            }
-        }
-        else {
-            return { "bookmark_title": element.title, "bookmark_url": element.url }
-        }
+    grouped_data.bookmarks = bookmarks[0].children.map((child)=>{
+        return bm_rec(child)
     })
 
     return new Promise((resolve)=>{
@@ -171,41 +174,50 @@ const tabs_bookmark_generator_json = (json) => {
             }
         });
     }  
-
+    
     if(json.bookmarks.length!=0){
+        // console.log(json.bookmarks)
         json.bookmarks.forEach((element) => {
-            if (element.group_title) {
-                chrome.bookmarks.create(
-                    {
-                        parentId: "1",
-                        title: element.group_title,
-                        url: null
-                    }
-                )
-                    .then((folder) => {
-                        element.bookmarks.forEach((element) => {
-                            chrome.bookmarks.create(
-                                {
-                                    parentId: folder.id,
-                                    title: element.bookmark_title,
-                                    url: element.bookmark_url
-                                }
-                            )
-                        })
-                    });
+            console.log(element)
+            if(element.group_title==="Bookmarks bar"){
+                console.log(element)
+                element.children.forEach((data)=>{
+                    create_bm_rec(data,"1")
+                })
             }
-            else {
-                chrome.bookmarks.create(
-                    {
-                        parentId: "1",
-                        title: element.bookmark_title,
-                        url: element.bookmark_url
-                    }
-                );
+            else if(element.group_title==="Other bookmarks"){
+                console.log(element)
+                element.children.forEach((data)=>{
+                    create_bm_rec(data,"2")
+                })
+            }
+            else{
+                create_bm_rec(element,"1")
             }
         })
     }
-    
+}
+
+function create_bm_rec(element,parentid){
+    if(element.children){
+        console.log(element)
+        chrome.bookmarks.create({
+                    parentId: parentid,
+                    title: element.group_title,
+                    url: null
+                }).then((folder)=>{
+                    element.children.forEach((child_element)=>{
+                        create_bm_rec(child_element,folder.id)
+                    })
+                })
+    }
+    else{
+        chrome.bookmarks.create({
+            parentId:parentid,
+            title:element.bookmark_title,
+            url:element.bookmark_url
+        })
+    }
 }
 
 async function specifics(){
@@ -254,15 +266,10 @@ async function specifics(){
                             })
                             .map(async (element) => {
                                 var parentData = await chrome.bookmarks.get(element.id)
-                                var childrenData = await chrome.bookmarks.getChildren(element.id)
+                                var subtree = await chrome.bookmarks.getSubTree(element.id)
                                 return {
                                     "group_title": parentData[0].title,
-                                    "bookmarks": childrenData.map((element) => {
-                                        return {
-                                            "bookmark_title": element.title,
-                                            "bookmark_url": element.url
-                                        }
-                                    })
+                                    "children": subtree[0].children.map(bm_rec)
                                 }
                             }))
 
@@ -298,22 +305,31 @@ down_specific_tab_group_button.addEventListener("click", async () => {
 
         head_h3_2.innerText = "Bookmark Group";
         parent_div.appendChild(head_h3_2);
-        bookmarks[0].children[0].children.forEach((element, index) => {
-            if (element.children) {
-                const div = document.createElement("div")
-                const input_label = document.createElement("label");
-                input_label.setAttribute('for', element.id);
-                input_label.innerText = element.title;
-                const input_checkbox = document.createElement("input");
-                input_checkbox.type = "checkbox";
-                input_checkbox.id = element.id;
-                input_checkbox.name = "bookmark_group-" + index;
-                div.appendChild(input_checkbox);
-                div.appendChild(input_label);
-                parent_div.appendChild(div)
-                specific_tab_group_div.appendChild(parent_div);
+        bookmarks[0].children.forEach((child)=>{
+            if(child.children.length !== 0){
+                const bm_group_1 = document.createElement("h5");
+                bm_group_1.innerText = child.title
+                bm_group_1.style.margin = 0
+                parent_div.appendChild(bm_group_1)
+                child.children.forEach((element, index)=>{
+                    if (element.children) {
+                        const div = document.createElement("div")
+                        const input_label = document.createElement("label");
+                        input_label.setAttribute('for', element.id);
+                        input_label.innerText = element.title;
+                        const input_checkbox = document.createElement("input");
+                        input_checkbox.type = "checkbox";
+                        input_checkbox.id = element.id;
+                        input_checkbox.name = "bookmark_group-" + index;
+                        div.appendChild(input_checkbox);
+                        div.appendChild(input_label);
+                        parent_div.appendChild(div)
+                        specific_tab_group_div.appendChild(parent_div);
+                    }
+                })
             }
         })
+
         down_specific_tab_group_button.innerText = "Download Selected";
         down_specific_tab_group_button.style.width = "50%";
         down_specific_tab_group_button.style.marginRight = "5px";
